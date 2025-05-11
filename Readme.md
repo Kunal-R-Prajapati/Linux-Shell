@@ -1,4 +1,4 @@
-# LSH - A Simple Shell in C
+# Linux-Shell - A Simple Shell in C
 
 > A fun and educational project to learn C/C++ in depth by building a simple command-line shell for Linux.
 
@@ -31,7 +31,7 @@ This project is **Linux-only compatible** for now.
 
 1. **Clone the Repository**
    ```bash 
-   git clone https://github.com/your-username/lsh-shell.git
+   git clone https://github.com/Kunal-R-Prajapati/Linux-Shell.git
    cd lsh-shell```
 2. **Compile the Program**
     ```bash
