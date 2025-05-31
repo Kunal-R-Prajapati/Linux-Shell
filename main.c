@@ -23,6 +23,7 @@
 int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
+int lsh_weather(char **args);
 
 /*
   List of builtin commands, followed by their corresponding functions.
@@ -30,12 +31,14 @@ int lsh_exit(char **args);
 char *builtin_str[] = {
     "cd",
     "help",
-    "exit"};
+    "exit",
+    "weather"};
 
 int (*builtin_func[])(char **) = {
     &lsh_cd,
     &lsh_help,
-    &lsh_exit};
+    &lsh_exit,
+    &lsh_weather};
 
 int lsh_num_builtins()
 {
@@ -88,6 +91,54 @@ int lsh_exit(char **args)
 {
     return 0;
 }
+/**
+ * Weather function
+ */
+int lsh_weather(char **args)
+{
+    if (args[1] == NULL)
+    {
+        fprintf(stderr, "lsh: expected city name after 'weather'\n");
+        return 1;
+    }
+
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        // Child process
+        char *url;
+        size_t len = strlen("wttr.in/") + strlen(args[1]) + 1;
+        url = malloc(len);
+        if (!url)
+        {
+            fprintf(stderr, "lsh: memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+
+        snprintf(url, len, "wttr.in/%s", args[1]);
+
+        char *curl_args[] = {"curl", url, NULL};
+        execvp("curl", curl_args);
+
+        perror("lsh"); // if execvp fails
+        free(url);
+        exit(EXIT_FAILURE);
+    }
+    else if (pid < 0)
+    {
+        // Fork failed
+        perror("lsh");
+    }
+    else
+    {
+        // Parent process
+        int status;
+        waitpid(pid, &status, 0);
+    }
+
+    return 1;
+}
+
 /**
   @brief Launch a program and wait for it to terminate.
   @param args Null terminated list of arguments (including program).

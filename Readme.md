@@ -17,6 +17,7 @@ This project is **Linux-only compatible** for now.
 - Built-in commands:
   - `cd` – Change directory
   - `help` – Show help message
+  - `weather` - Show the weather of city you enter within the terminal
   - `exit` – Exit the shell
 - Forks a child process to run commands
 - Uses `execvp()` to launch programs
