@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <time.h>
 
 // Definig global values for the shell
 #define LSH_RL_BUFSIZE 1024
@@ -24,6 +25,7 @@ int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
 int lsh_weather(char **args);
+int lsh_radio(char **args);
 
 /*
   List of builtin commands, followed by their corresponding functions.
@@ -32,13 +34,15 @@ char *builtin_str[] = {
     "cd",
     "help",
     "exit",
-    "weather"};
+    "weather",
+    "radio"};
 
 int (*builtin_func[])(char **) = {
     &lsh_cd,
     &lsh_help,
     &lsh_exit,
-    &lsh_weather};
+    &lsh_weather,
+    &lsh_radio};
 
 int lsh_num_builtins()
 {
@@ -93,6 +97,7 @@ int lsh_exit(char **args)
 }
 /**
  * Weather function
+ * This function uses wttr.in api to get weather data
  */
 int lsh_weather(char **args)
 {
@@ -135,6 +140,54 @@ int lsh_weather(char **args)
         int status;
         waitpid(pid, &status, 0);
     }
+
+    return 1;
+}
+
+/**
+ * Function to play music on the terminal
+ * Following pagages are neede to use it
+ *  sudo apt install mpv yt-dlp
+ */
+int lsh_radio(char **args)
+{
+    // I have added these five links only because I have found only these working if you find any other radio station working then add that in these and help to make this shell more powerfull and a fun project
+    const char *stations[] = {
+        "http://air.pc.cdn.bitgravity.com/air/live/pbaudio048/playlist.m3u8", // AIR FM Rainbow
+        "http://stream.radiobollyfm.in:8201/",
+        "http://eu8.fastcast4u.com:5484/1/",
+        "http://www.streamcontrol.net:12010/",
+        "http://mehefil.no-ip.com/"};
+    const char *names[] = {
+        "AIR FM Rainbow",
+        "Radio Bolly FM",
+        "Akash Vani Radio",
+        "Bolly 92.3 FM",
+        "Mehefil Radio"};
+    const int num_stations = sizeof(stations) / sizeof(stations[0]);
+    printf("Available Radio Stations:\n\n");
+    for (int i = 0; i < num_stations; i++)
+    {
+        printf("  %d. %s\n", i + 1, names[i]);
+    }
+
+    printf("\nSelect a station to play [1-%d]: ", num_stations);
+    int choice = 0;
+    scanf("%d", &choice);
+
+    if (choice < 1 || choice > num_stations)
+    {
+        printf("Invalid choice.\n");
+        return 1;
+    }
+
+    printf("\n Playing: %s\n", names[choice - 1]);
+    printf(" Press Ctrl+C to stop listening at any time.\n\n");
+
+    // Build the playback command using mpv
+    char command[512];
+    snprintf(command, sizeof(command), "mpv --no-video \"%s\"", stations[choice - 1]);
+    system(command);
 
     return 1;
 }

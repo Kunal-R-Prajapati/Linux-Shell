@@ -18,6 +18,7 @@ This project is **Linux-only compatible** for now.
   - `cd` – Change directory
   - `help` – Show help message
   - `weather` - Show the weather of city you enter within the terminal
+  - `radio` - Play a radio station which you like inside your shell
   - `exit` – Exit the shell
 - Forks a child process to run commands
 - Uses `execvp()` to launch programs
