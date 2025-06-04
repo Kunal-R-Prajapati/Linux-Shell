@@ -7,54 +7,135 @@
 
 ## 📌 About
 
-This is a mini project inspired by an online tutorial to help understand the fundamentals of systems programming using the C language. The shell supports basic commands and has a few built-in functions like `cd`, `help`, and `exit`. It mimics a very simplified version of a Unix shell.
+This is a mini project inspired by an online tutorial to help understand the fundamentals of systems programming using the C language. A minimalist yet powerful custom Linux shell with built-in commands like `weather`, `radio`, `todo`, and `ai`—designed for both utility and fun. Built with C, it supports external commands, internal tools, and Google Gemini AI integration. It mimics a very simplified version of a Unix shell.
 
 This project is **Linux-only compatible** for now.
 
 ## 🛠️ Features
 
-- Executes Linux commands like `ls`, `pwd`, `echo`, etc.
-- Built-in commands:
+- Executes standard Linux commands like `ls`, `pwd`, `echo`, etc.
+- Built-in internal commands:
   - `cd` – Change directory
   - `help` – Show help message
-  - `weather` - Show the weather of city you enter within the terminal
-  - `radio` - Play a radio station which you like inside your shell
-  - `todo` - A basic todo app right inside your shell as an internal command
+  - `weather` – View real-time weather updates from the terminal
+  - `radio` – Listen to Indian radio stations from the terminal
+  - `todo` – Add, remove, and list tasks directly in your terminal
+  - `ai` – Ask questions and get responses from Google Gemini AI
   - `exit` – Exit the shell
-- Forks a child process to run commands
-- Uses `execvp()` to launch programs
+- Forks child processes to run commands
+- Uses `execvp()` for external programs
 - Tokenizes input with custom delimiters
-- Graceful handling of EOF and invalid commands
+- Graceful handling of `EOF` and invalid commands
+- Simple, modular, and extensible design
+
 
 ## 📂 File Structure
 - main.c # Source code for the shell
 - README.md # You're reading it!
 
-## 🚀 How to Run
+## 🧰 Dependencies
 
-1. **Clone the Repository**
-   ```bash 
-   git clone https://github.com/Kunal-R-Prajapati/Linux-Shell.git
-   cd lsh-shell```
-2. **Compile the Program**
-    ```bash
-    gcc -o main main.c
-3. **Run the Shell**
-    ```bash
-    ./main
+To run all features properly, make sure you have the following installed:
+
+- `curl` – For API calls (weather, AI)
+- `ffplay` or `mpv` – For playing radio streams
+- `jq` – For parsing JSON (used in AI response parsing)
+
+Install them on Ubuntu/Debian using:
+
+```bash
+sudo apt update
+sudo apt install curl ffmpeg jq
+```
+
+---
+
+## 🔐 Gemini API Key Setup
+
+1. Create an account at [Google AI Studio](https://aistudio.google.com/)
+2. Generate a Gemini API key.
+3. Save your key in a file named `gemini_key.h`:
+
+```c
+// gemini_key.h
+#define GEMINI_API_KEY "your-api-key-here"
+```
+
+4. Add `gemini_key.h` to `.gitignore`:
+
+```gitignore
+gemini_key.h
+```
+
+5. Use the provided `gemini_key_example.h` as a template.
+
+---
+
+## ⚙️ Build & Run
+
+### 🔨 Build the shell
+
+```bash
+gcc -o main main.c
+```
+
+### ▶️ Run the shell
+
+```bash
+./main
+```
+
+---
+
 
 > ⚠️ **Note**  
 > This shell is compatible with **Linux only**.  
 > Make sure you have GCC installed before compiling.
 
-## ⌨️ Example Usage 
+## 🚀 Usage
+
+
+### 📻 Radio
+
 ```bash
->>> help
->>> cd /home
->>> ls
->>> echo Hello World!
->>> exit
+radio
 ```
+Choose from a list of working Indian stations.
+
+---
+
+### ✅ Todo
+
+```bash
+todo add "Buy groceries"
+todo list
+todo remove 1
+todo help
+```
+
+---
+
+### 🤖 AI
+
+```bash
+ai Tell me a fun fact about the moon
+ai help
+```
+
+---
+
+## 📌 Example
+
+```bash
+
+$ todo add "Fix bug in radio"
+Added task: Fix bug in radio
+
+$ ai What is the capital of France?
+Paris is the capital city of France.
+```
+
+---
 
 ## 🧠 Learning Objectives
 - Understand how command-line interfaces work
@@ -75,3 +156,7 @@ You're welcome to contribute! This is a beginner-friendly project. Feel free to:
 - Refactor or document code
 ## 📃 License
 >This project is for educational purposes and is shared freely. No formal license is applied.
+
+## 👨‍💻 Author
+
+Made with ❤️ by Kunal Prajapati

@@ -12,12 +12,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <time.h>
+#include "gemini_key.h"
 
 // Definig global values for the shell
 #define LSH_RL_BUFSIZE 1024
 #define LSH_TOK_BUFSIZE 64
 #define LSH_TOK_DELIM " \t\r\n\a"
-#define TODO_FILE "todo.txt" //Location for todo file to save in system
+#define TODO_FILE "todo.txt" // Location for todo file to save in system
 
 /*
   Function Declarations for builtin shell commands:
@@ -28,6 +29,7 @@ int lsh_exit(char **args);
 int lsh_weather(char **args);
 int lsh_radio(char **args);
 int lsh_todo(char **args);
+int lsh_ai(char **args);
 
 /*
   List of builtin commands, followed by their corresponding functions.
@@ -38,7 +40,8 @@ char *builtin_str[] = {
     "exit",
     "weather",
     "radio",
-    "todo"};
+    "todo",
+    "ai"};
 
 int (*builtin_func[])(char **) = {
     &lsh_cd,
@@ -46,7 +49,8 @@ int (*builtin_func[])(char **) = {
     &lsh_exit,
     &lsh_weather,
     &lsh_radio,
-    &lsh_todo};
+    &lsh_todo,
+    &lsh_ai};
 
 int lsh_num_builtins()
 {
@@ -89,7 +93,7 @@ int lsh_help(char **args)
     {
         printf(" %s\n", builtin_str[i]);
     }
-    printf("Use the man command for information on other programs.");
+    printf("Use the man command for information on other programs.\n");
     return 1;
 }
 /**
@@ -197,19 +201,22 @@ int lsh_radio(char **args)
 }
 
 /**
- * Todo functions 
+ * Todo functions
  */
 
- //Function t access todo file
-char *get_todo_file_path() {
+// Function t access todo file
+char *get_todo_file_path()
+{
     static char path[1024];
     snprintf(path, sizeof(path), "%s/%s", getenv("HOME"), TODO_FILE);
     return path;
 }
 // Function to add task
-void todo_add(char *task, char *priority, char *deadline) {
+void todo_add(char *task, char *priority, char *deadline)
+{
     FILE *file = fopen(get_todo_file_path(), "a");
-    if (!file) {
+    if (!file)
+    {
         perror("Error opening todo file");
         return;
     }
@@ -217,10 +224,12 @@ void todo_add(char *task, char *priority, char *deadline) {
     fclose(file);
     printf("Task added: %s (Priority: %s, Deadline: %s)\n", task, priority, deadline);
 }
-//Function to View all the task
-void todo_list() {
+// Function to View all the task
+void todo_list()
+{
     FILE *file = fopen(get_todo_file_path(), "r");
-    if (!file) {
+    if (!file)
+    {
         printf(" No tasks found.\n");
         return;
     }
@@ -231,28 +240,32 @@ void todo_list() {
     printf("------------------------------------------------------------\n");
     printf("ID | Task                        | Priority | Deadline\n");
     printf("------------------------------------------------------------\n");
-    
-    while (fgets(line, sizeof(line), file)) {
+
+    while (fgets(line, sizeof(line), file))
+    {
         char *task = strtok(line, "|");
         char *priority = strtok(NULL, "|");
         char *deadline = strtok(NULL, "|\n");
-        
+
         printf("%-3d| %-27s| %-8s| %s\n", id++, task, priority, deadline);
     }
-    
+
     printf("------------------------------------------------------------\n");
     fclose(file);
 }
-//Function to mark a task to done
-void todo_done(int task_id) {
+// Function to mark a task to done
+void todo_done(int task_id)
+{
     FILE *file = fopen(get_todo_file_path(), "r");
-    if (!file) {
+    if (!file)
+    {
         printf(" No tasks to complete.\n");
         return;
     }
 
     FILE *temp = fopen("/tmp/todo_tmp.txt", "w");
-    if (!temp) {
+    if (!temp)
+    {
         perror("Temp file error");
         fclose(file);
         return;
@@ -262,10 +275,14 @@ void todo_done(int task_id) {
     int id = 1;
     int removed = 0;
 
-    while (fgets(line, sizeof(line), file)) {
-        if (id != task_id) {
+    while (fgets(line, sizeof(line), file))
+    {
+        if (id != task_id)
+        {
             fputs(line, temp);
-        } else {
+        }
+        else
+        {
             removed = 1;
         }
         id++;
@@ -274,16 +291,20 @@ void todo_done(int task_id) {
     fclose(file);
     fclose(temp);
 
-    if (removed) {
+    if (removed)
+    {
         rename("/tmp/todo_tmp.txt", get_todo_file_path());
         printf("Task %d marked as done!\n", task_id);
-    } else {
+    }
+    else
+    {
         remove("/tmp/todo_tmp.txt");
         printf("Task not found.\n");
     }
 }
-//Todo command help function
-void todo_help() {
+// Todo command help function
+void todo_help()
+{
     printf("To-Do Command Help\n");
     printf("--------------------------------------------------\n");
     printf("Usage:\n");
@@ -301,52 +322,123 @@ void todo_help() {
 /**
  * Todo actual function
  */
-int lsh_todo(char **args) 
+int lsh_todo(char **args)
 {
-        if (args[1] == NULL) {
+    if (args[1] == NULL)
+    {
         todo_help();
         return 1;
     }
 
-    if (strcmp(args[1], "help") == 0) {
+    if (strcmp(args[1], "help") == 0)
+    {
         todo_help();
-    } else if (strcmp(args[1], "add") == 0) {
+    }
+    else if (strcmp(args[1], "add") == 0)
+    {
         char task[512] = "";
         char priority[32] = "Normal";
         char deadline[32] = "None";
 
         int i = 2;
-        while (args[i] != NULL && args[i][0] != '-') {
+        while (args[i] != NULL && args[i][0] != '-')
+        {
             strcat(task, args[i]);
             strcat(task, " ");
             i++;
         }
 
-        while (args[i] != NULL) {
-            if (strcmp(args[i], "-p") == 0 && args[i + 1]) {
+        while (args[i] != NULL)
+        {
+            if (strcmp(args[i], "-p") == 0 && args[i + 1])
+            {
                 strcpy(priority, args[++i]);
-            } else if (strcmp(args[i], "-d") == 0 && args[i + 1]) {
+            }
+            else if (strcmp(args[i], "-d") == 0 && args[i + 1])
+            {
                 strcpy(deadline, args[++i]);
             }
             i++;
         }
 
         todo_add(task, priority, deadline);
-    } else if (strcmp(args[1], "list") == 0) {
+    }
+    else if (strcmp(args[1], "list") == 0)
+    {
         todo_list();
-    } else if (strcmp(args[1], "done") == 0 && args[2]) {
+    }
+    else if (strcmp(args[1], "done") == 0 && args[2])
+    {
         int id = atoi(args[2]);
-        if (id > 0) {
+        if (id > 0)
+        {
             todo_done(id);
-        } else {
+        }
+        else
+        {
             printf("Invalid task ID.\n");
         }
-    } else {
+    }
+    else
+    {
         todo_help();
     }
     return 1;
 }
 
+/**
+ * AI integration google gemini
+ */
+
+int lsh_ai(char **args)
+{
+    if (args[1] == NULL)
+    {
+        fprintf(stderr, "ai: expected a prompt. Usage: ai [your prompt here]\n");
+        return 1;
+    }
+
+    if (strcmp(args[1], "help") == 0)
+    {
+        printf("Usage: ai [prompt]\nExample: ai Tell me about computers\n");
+        return 1;
+    }
+
+    // Join all arguments into a prompt string
+    char prompt[1024] = {0};
+    for (int i = 1; args[i] != NULL; i++)
+    {
+        strcat(prompt, args[i]);
+        if (args[i + 1] != NULL)
+            strcat(prompt, " ");
+    }
+
+    // Escape double quotes in prompt
+    char safe_prompt[2048] = {0};
+    for (int i = 0, j = 0; prompt[i] != '\0' && j < sizeof(safe_prompt) - 1; i++)
+    {
+        if (prompt[i] == '"')
+            safe_prompt[j++] = '\\';
+        safe_prompt[j++] = prompt[i];
+    }
+
+    // Save the response to a temp file
+    char command[4096];
+    snprintf(command, sizeof(command),
+             "curl -s -X POST \"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s\" "
+             "-H \"Content-Type: application/json\" "
+             "-d '{\"contents\":[{\"parts\":[{\"text\":\"%s\"}]}]}' > .ai_response.json",
+             GEMINI_API_KEY, safe_prompt);
+
+    // Execute curl command
+    system(command);
+
+    // Now extract just the response text using grep/sed/awk
+    system("jq -r '.candidates[0].content.parts[0].text' .ai_response.json");
+    // Clean up the temporary file
+    system("rm -f .ai_response.json");
+    return 1;
+}
 /**
   @brief Launch a program and wait for it to terminate.
   @param args Null terminated list of arguments (including program).
@@ -381,7 +473,6 @@ int lsh_launch(char **args)
     }
     return 1;
 }
-
 
 /**
    @brief Execute shell built-in or launch program.
